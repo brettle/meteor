@@ -8,11 +8,16 @@ Package.describe({
 });
 
 Package.onUse(function(api) {
-  api.addFiles('html-scanner.js');
+  api.addFiles([
+    'handle-tag.js',
+    'html-scanner.js'
+  ]);
+
   api.export('HtmlScanner');
 
   api.use([
-    'spacebars-compiler'
+    'spacebars-compiler',
+    'ecmascript'
   ]);
 });
 

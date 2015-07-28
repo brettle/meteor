@@ -15,6 +15,7 @@ class TemplateCompiler extends CachingCompiler {
       defaultCacheSize: 1024*1024*10,
     });
     this._bodyAttrInfo = null;
+    this._htmlScanner = new HtmlScanner();
   }
 
   compileResultSize(compileResult) {
@@ -40,7 +41,7 @@ class TemplateCompiler extends CachingCompiler {
     const contents = inputFile.getContentsAsString();
     const path = inputFile.getPathInPackage();
     try {
-      return HtmlScanner.scan(contents, path);
+      return this._htmlScanner.scan(contents, path);
     } catch (e) {
       if ((e instanceof HtmlScanner.ParseError) ||
           (e instanceof HtmlScanner.BodyAttrsError)) {

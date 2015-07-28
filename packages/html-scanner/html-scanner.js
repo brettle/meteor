@@ -1,4 +1,4 @@
-HtmlScanner = {
+HtmlScanner = class HtmlScanner {
   // Scan a template file for <head>, <body>, and <template>
   // tags and extract their contents.
   //
@@ -6,13 +6,9 @@ HtmlScanner = {
   // top-level tags, which are allowed to have attributes,
   // and ignores top-level HTML comments.
 
-  // Has fields 'message', 'line', 'file'
-  ParseError: function () {},
-  BodyAttrsError: function () {},
-
   // Note: source_name is only used for errors (so it's not part of the cache
   // key in compile-templates.js).
-  scan: function (contents, source_name) {
+  scan(contents, source_name) {
     var rest = contents;
     var index = 0;
 
@@ -39,8 +35,14 @@ HtmlScanner = {
       throwSpecialError(msg, HtmlScanner.BodyAttrsError);
     };
 
-    var results = HtmlScanner._initResults();
-    var rOpenTag = /^((<(template|head|body)\b)|(<!--)|(<!DOCTYPE|{{!)|$)/i;
+    var results = {};
+    results.head = '';
+    results.body = '';
+    results.js = '';
+    results.bodyAttrs = {};
+
+    tagNames = ["body", "head", "template"].join("|");
+    var rOpenTag = new RegExp(`^((<(${tagNames})\\b)|(<!--)|(<!DOCTYPE|{{!)|$)`, "i");
 
     while (rest) {
       // skip whitespace first (for better line numbers)
@@ -115,7 +117,7 @@ HtmlScanner = {
       }
 
       // act on the tag
-      HtmlScanner._handleTag(results, tagName, tagAttribs, tagContents,
+      handleTag(results, tagName, tagAttribs, tagContents,
                               throwParseError, contentsStartIndex,
                               tagStartIndex);
 
@@ -124,18 +126,9 @@ HtmlScanner = {
     }
 
     return results;
-  },
+  }
 
-  _initResults: function() {
-    var results = {};
-    results.head = '';
-    results.body = '';
-    results.js = '';
-    results.bodyAttrs = {};
-    return results;
-  },
-
-  _addBodyAttrs: function (results, attrs, throwBodyAttrsError) {
+  _addBodyAttrs(results, attrs, throwBodyAttrsError) {
     Object.keys(attrs).forEach(function (attr) {
       var val = attrs[attr];
 
@@ -146,79 +139,10 @@ HtmlScanner = {
 
       results.bodyAttrs[attr] = val;
     });
-  },
-
-  _handleTag: function (results, tag, attribs, contents, throwParseError,
-                        contentsStartIndex, tagStartIndex) {
-
-    // trim the tag contents.
-    // this is a courtesy and is also relied on by some unit tests.
-    var m = contents.match(/^([ \t\r\n]*)([\s\S]*?)[ \t\r\n]*$/);
-    contentsStartIndex += m[1].length;
-    contents = m[2];
-
-    // do we have 1 or more attribs?
-    var hasAttribs = false;
-    for(var k in attribs) {
-      if (attribs.hasOwnProperty(k)) {
-        hasAttribs = true;
-        break;
-      }
-    }
-
-    if (tag === "head") {
-      if (hasAttribs)
-        throwParseError("Attributes on <head> not supported");
-      results.head += contents;
-      return;
-    }
-
-
-    // <body> or <template>
-
-    try {
-      if (tag === "template") {
-        var name = attribs.name;
-        if (! name)
-          throwParseError("Template has no 'name' attribute");
-
-        if (SpacebarsCompiler.isReservedName(name))
-          throwParseError("Template can't be named \"" + name + "\"");
-
-        var renderFuncCode = SpacebarsCompiler.compile(
-          contents, {
-            isTemplate: true,
-            sourceName: 'Template "' + name + '"'
-          });
-
-        var nameLiteral = JSON.stringify(name);
-        var templateDotNameLiteral = JSON.stringify("Template." + name);
-
-        results.js += "\nTemplate.__checkName(" + nameLiteral + ");\n" +
-          "Template[" + nameLiteral + "] = new Template(" +
-          templateDotNameLiteral + ", " + renderFuncCode + ");\n";
-      } else {
-        // <body>
-        if (hasAttribs) {
-          results.js += "\nMeteor.startup(function() { $('body').attr(" + JSON.stringify(attribs) + "); });\n";
-        }
-
-        var renderFuncCode = SpacebarsCompiler.compile(
-          contents, {
-            isBody: true,
-            sourceName: "<body>"
-          });
-
-        // We may be one of many `<body>` tags.
-        results.js += "\nTemplate.body.addContent(" + renderFuncCode + ");\nMeteor.startup(Template.body.renderToDocument);\n";
-      }
-    } catch (e) {
-      if (e.scanner) {
-        // The error came from Spacebars
-        throwParseError(e.message, contentsStartIndex + e.offset);
-      } else {
-        throw e;
-      }
-    }
   }
 };
+
+
+// Has fields 'message', 'line', 'file'
+HtmlScanner.ParseError = function () {};
+HtmlScanner.BodyAttrsError = function () {};
