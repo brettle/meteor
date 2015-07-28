@@ -15,7 +15,7 @@ class TemplateCompiler extends CachingCompiler {
       defaultCacheSize: 1024*1024*10,
     });
     this._bodyAttrInfo = null;
-    this._htmlScanner = new HtmlScanner();
+    this._htmlScanner = new HtmlScanner(["body", "head", "template"]);
   }
 
   compileResultSize(compileResult) {

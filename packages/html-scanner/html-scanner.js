@@ -6,13 +6,20 @@ HtmlScanner = class HtmlScanner {
   // top-level tags, which are allowed to have attributes,
   // and ignores top-level HTML comments.
 
+  // Configure which top-level tags this scanner accepts; all others will cause
+  // an error
+  constructor(tagNames) {
+    this.tagNames = tagNames;
+  }
+
   // Note: source_name is only used for errors (so it's not part of the cache
   // key in compile-templates.js).
   scan(contents, sourceName) {
-    this.rest = contents;
-    this.index = 0;
     this.sourceName = sourceName;
     this.contents = contents;
+
+    this.rest = contents;
+    this.index = 0; 
 
     var results = {};
     results.head = '';
@@ -20,7 +27,7 @@ HtmlScanner = class HtmlScanner {
     results.js = '';
     results.bodyAttrs = {};
 
-    tagNames = ["body", "head", "template"].join("|");
+    tagNames = this.tagNames.join("|");
     var rOpenTag = new RegExp(`^((<(${tagNames})\\b)|(<!--)|(<!DOCTYPE|{{!)|$)`, "i");
 
     while (this.rest) {
@@ -29,8 +36,7 @@ HtmlScanner = class HtmlScanner {
 
       var match = rOpenTag.exec(this.rest);
       if (! match)
-        this.throwParseError("Expected <template>, <head>, or <body> tag" +
-                        " in template file");
+        this.throwParseError(`Expected one of: <${this.tagNames.join('>, <')}>`);
 
       var matchToken = match[1];
       var matchTokenTagName =  match[3];

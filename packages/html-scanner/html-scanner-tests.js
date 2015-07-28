@@ -45,11 +45,11 @@ Tinytest.add("html-scanner - html scanner", function (test) {
     test.equal(results.head, expectHead || '');
   };
 
-  htmlScanner = new HtmlScanner();
+  htmlScanner = new HtmlScanner(["body", "head", "template"]);
 
   checkError(function() {
     return htmlScanner.scan("asdf");
-  }, "Expected <template>, <head>, or <body> tag in template file", 1);
+  }, "Expected one of: <body>, <head>, <template>", 1);
 
   // body all on one line
   checkResults(
@@ -128,7 +128,7 @@ Tinytest.add("html-scanner - html scanner", function (test) {
   // bad open tag
   checkError(function() {
     return htmlScanner.scan("\n\n\n<bodyd>\n  Hello\n</body>");
-  }, "Expected <template>, <head>, or <body> tag in template file", 4);
+  }, "Expected one of: <body>, <head>, <template>", 4);
   checkError(function() {
     return htmlScanner.scan("\n\n\n\n<body foo=>\n  Hello\n</body>");
   }, "error in tag", 5);
@@ -172,6 +172,6 @@ Tinytest.add("html-scanner - html scanner", function (test) {
   // unexpected <html> at top level
   checkError(function() {
     return htmlScanner.scan('\n<html>\n</html>');
-  }, "Expected <template>, <head>, or <body> tag in template file", 2);
+  }, "Expected one of: <body>, <head>, <template>", 2);
 
 });
