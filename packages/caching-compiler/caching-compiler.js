@@ -1,5 +1,5 @@
-const fs = Npm.require('fs');;
-const path = Npm.require('path');
+const fs = Plugin.fs;
+const path = Plugin.path;
 const createHash = Npm.require('crypto').createHash;
 const assert = Npm.require('assert');
 const Future = Npm.require('fibers/future');

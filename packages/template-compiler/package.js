@@ -16,6 +16,6 @@ Package.onUse(function(api) {
     'ecmascript'
   ]);
 
-  api.addFiles('template-compiler.js');
-  api.export("TemplateCompiler");
+  api.addFiles('template-compiler.js', 'server');
+  api.export("TemplateCompiler", 'server');
 });

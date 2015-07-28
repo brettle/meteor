@@ -15,13 +15,16 @@ HtmlScanner = class HtmlScanner {
    * top level. If any other tag is encountered, an error is thrown.
    */
   constructor({
-      sourceName,
-      contents,
-      tagNames,
-      tagHandler}) {
+        sourceName,
+        contents,
+        tagNames,
+        tagHandler,
+        compileErrorClass
+      }) {
     this.sourceName = sourceName;
     this.contents = contents;
     this.tagNames = tagNames;
+    this.compileErrorClass = compileErrorClass;
 
     this.rest = contents;
     this.index = 0;
@@ -145,7 +148,7 @@ HtmlScanner = class HtmlScanner {
   throwCompileError(msg, overrideIndex) {
     const finalIndex = (typeof overrideIndex === 'number' ? overrideIndex : this.index);
 
-    const err = new TemplateCompiler.CompileError();
+    const err = new this.compileErrorClass();
     err.message = msg || "bad formatting in template file";
     err.file = this.sourceName;
     err.line = this.contents.substring(0, finalIndex).split('\n').length;

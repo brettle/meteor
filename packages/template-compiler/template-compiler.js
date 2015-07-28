@@ -1,4 +1,4 @@
-const path = Npm.require('path');
+const path = Plugin.path;
 
 // The CompileResult type for this CachingCompiler is the return value of
 // htmlScanner.scan: a {js, head, body, bodyAttrs} object.
@@ -44,7 +44,8 @@ TemplateCompiler = class TemplateCompiler extends CachingCompiler {
         sourceName: inputPath,
         contents: contents,
         tagNames: ["body", "head", "template"],
-        tagHandler: tagHandler
+        tagHandler: tagHandler,
+        compileErrorClass: TemplateCompiler.CompileError
       });
 
       return tagHandler.getResults();

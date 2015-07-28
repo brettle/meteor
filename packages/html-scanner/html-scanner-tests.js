@@ -52,7 +52,8 @@ Tinytest.add("html-scanner - html scanner", function (test) {
       sourceName: "",
       contents: contents,
       tagNames: ["body", "head", "template"],
-      tagHandler: tagHandler
+      tagHandler: tagHandler,
+      compileErrorClass: function () {}
     });
 
     return tagHandler.getResults();
