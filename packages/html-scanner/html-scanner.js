@@ -1,13 +1,15 @@
 HtmlScanner = {
   scan(sourceName, contents, tagNames) {
-    const scanInstance = new SingleFileScan({
+    const tagHandler = new SpacebarsTagHandler();
+
+    const scanInstance = new HTMLTagScanner({
       sourceName,
       contents,
       tagNames,
-      handleTag
+      tagHandler
     });
 
-    return scanInstance.getResults();
+    return tagHandler.getResults();
   },
 
   // Has fields 'message', 'line', 'file'
@@ -21,7 +23,7 @@ HtmlScanner = {
  * top-level tags, which are allowed to have attributes,
  * and ignores top-level HTML comments.
  */
-class SingleFileScan {
+class HTMLTagScanner {
   /**
    * Initialize and run a scan of a single file
    * @param  {String} sourceName The filename, used in errors only
@@ -33,20 +35,13 @@ class SingleFileScan {
       sourceName,
       contents,
       tagNames,
-      handleTag}) {
+      tagHandler}) {
     this.sourceName = sourceName;
     this.contents = contents;
     this.tagNames = tagNames;
 
     this.rest = contents;
     this.index = 0;
-
-    this.results = {
-      head: '',
-      body: '',
-      js: '',
-      bodyAttrs: {}
-    };
 
     tagNameRegex = this.tagNames.join("|");
     const openTagRegex = new RegExp(`^((<(${tagNameRegex})\\b)|(<!--)|(<!DOCTYPE|{{!)|$)`, "i");
@@ -148,7 +143,7 @@ class SingleFileScan {
       };
 
       // act on the tag
-      handleTag(this.results, tag, this.throwParseError.bind(this));
+      tagHandler.handleTag(tag, this.throwParseError.bind(this));
 
       // advance afterwards, so that line numbers in errors are correct
       this.advance(end.index + end[0].length);
@@ -182,9 +177,5 @@ class SingleFileScan {
 
   throwBodyAttrsError(msg) {
     this.throwSpecialError(msg, HtmlScanner.ParseError);
-  }
-
-  getResults() {
-    return this.results;
   }
 }
