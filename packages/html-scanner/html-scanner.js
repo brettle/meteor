@@ -1,5 +1,6 @@
 /**
- * Scan an HTML file for top-level tags and extract their contents.
+ * Scan an HTML file for top-level tags and extract their contents. Pass them to
+ * a tag handler (an object with a handleTag method)
  *
  * This is a primitive, regex-based scanner.  It scans 
  * top-level tags, which are allowed to have attributes,
