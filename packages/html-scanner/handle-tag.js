@@ -31,26 +31,29 @@ handleTag = function handleTag(results, tag, throwParseError) {
       }
 
       if (SpacebarsCompiler.isReservedName(name)) {
-        throwParseError("Template can't be named \"" + name + "\"");
+        throwParseError(`Template can't be named "${name}"`);
       }
 
       const renderFuncCode = SpacebarsCompiler.compile(contents, {
         isTemplate: true,
-        sourceName: 'Template "' + name + '"'
+        sourceName: `Template "${name}"`
       });
 
       const nameLiteral = JSON.stringify(name);
-      const templateDotNameLiteral = JSON.stringify("Template." + name);
+      const templateDotNameLiteral = JSON.stringify(`Template.${name}`);
 
-      results.js += "\nTemplate.__checkName(" + nameLiteral + ");\n" +
-        "Template[" + nameLiteral + "] = new Template(" +
-        templateDotNameLiteral + ", " + renderFuncCode + ");\n";
+      results.js += `
+Template.__checkName(${nameLiteral});
+Template[${nameLiteral}] = new Template(${templateDotNameLiteral}, ${renderFuncCode});
+`;
     } else if (tagName === "body") {
       addBodyAttrs(results, attribs, throwParseError);
 
       // <body>
       if (hasAttribs) {
-        results.js += "\nMeteor.startup(function() { $('body').attr(" + JSON.stringify(attribs) + "); });\n";
+        results.js += `
+Meteor.startup(function() { $('body').attr(${JSON.stringify(attribs)}); });
+`;
       }
 
       const renderFuncCode = SpacebarsCompiler.compile(contents, {
@@ -59,7 +62,10 @@ handleTag = function handleTag(results, tag, throwParseError) {
       });
 
       // We may be one of many `<body>` tags.
-      results.js += "\nTemplate.body.addContent(" + renderFuncCode + ");\nMeteor.startup(Template.body.renderToDocument);\n";
+      results.js += `
+Template.body.addContent(${renderFuncCode});
+Meteor.startup(Template.body.renderToDocument);
+`;
     } else {
       throwParseError("Expected <template>, <head>, or <body> tag in template file", tagStartIndex);
     }
@@ -79,7 +85,7 @@ function addBodyAttrs(results, attrs, throwParseError) {
 
     if (results.bodyAttrs.hasOwnProperty(attr) && results.bodyAttrs[attr] !== val) {
       throwParseError(
-        "<body> declarations have conflicting values for the '" + attr + "' attribute.");
+        `<body> declarations have conflicting values for the '${attr}' attribute.`);
     }
 
     results.bodyAttrs[attr] = val;
