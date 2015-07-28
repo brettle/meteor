@@ -35,7 +35,7 @@ HtmlScanner = class HtmlScanner {
       const match = openTagRegex.exec(this.rest);
 
       if (! match) {
-        this.throwParseError(`Expected one of: <${this.tagNames.join('>, <')}>`);
+        this.throwCompileError(`Expected one of: <${this.tagNames.join('>, <')}>`);
       }
 
       const matchToken = match[1];
@@ -54,7 +54,7 @@ HtmlScanner = class HtmlScanner {
         // top-level HTML comment
         const commentEnd = /--\s*>/.exec(this.rest);
         if (! commentEnd)
-          this.throwParseError("unclosed HTML comment in template file");
+          this.throwCompileError("unclosed HTML comment in template file");
         this.advance(commentEnd.index + commentEnd[0].length);
         continue;
       }
@@ -62,14 +62,14 @@ HtmlScanner = class HtmlScanner {
       if (matchTokenUnsupported) {
         switch (matchTokenUnsupported.toLowerCase()) {
         case '<!doctype':
-          this.throwParseError(
+          this.throwCompileError(
             "Can't set DOCTYPE here.  (Meteor sets <!DOCTYPE html> for you)");
         case '{{!':
-          this.throwParseError(
+          this.throwCompileError(
             "Can't use '{{! }}' outside a template.  Use '<!-- -->'.");
         }
 
-        this.throwParseError();
+        this.throwCompileError();
       }
 
       // otherwise, a <tag>
@@ -98,13 +98,13 @@ HtmlScanner = class HtmlScanner {
       }
 
       if (! attr) { // didn't end on '>'
-        this.throwParseError("Parse error in tag");
+        this.throwCompileError("Parse error in tag");
       }
 
       // find </tag>
       const end = (new RegExp('</'+tagName+'\\s*>', 'i')).exec(this.rest);
       if (! end) {
-        this.throwParseError("unclosed <"+tagName+">");
+        this.throwCompileError("unclosed <"+tagName+">");
       }
 
       const tagContents = this.rest.slice(0, end.index);
@@ -125,7 +125,7 @@ HtmlScanner = class HtmlScanner {
       };
 
       // act on the tag
-      tagHandler.handleTag(tag, this.throwParseError.bind(this));
+      tagHandler.handleTag(tag, this.throwCompileError.bind(this));
 
       // advance afterwards, so that line numbers in errors are correct
       this.advance(end.index + end[0].length);
@@ -141,7 +141,7 @@ HtmlScanner = class HtmlScanner {
     this.index += amount;
   }
 
-  throwParseError(msg, overrideIndex) {
+  throwCompileError(msg, overrideIndex) {
     const finalIndex = (typeof overrideIndex === 'number' ? overrideIndex : this.index);
 
     const err = new TemplateCompiler.CompileError();

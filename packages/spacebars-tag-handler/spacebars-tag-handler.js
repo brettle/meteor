@@ -12,7 +12,7 @@ SpacebarsTagHandler = class SpacebarsTagHandler {
     return this.results;
   }
 
-  handleTag(tag, throwParseError) {
+  handleTag(tag, throwCompileError) {
     const {
       tagName,
       attribs,
@@ -26,7 +26,7 @@ SpacebarsTagHandler = class SpacebarsTagHandler {
 
     if (tagName === "head") {
       if (hasAttribs) {
-        throwParseError("Attributes on <head> not supported");
+        throwCompileError("Attributes on <head> not supported");
       }
 
       this.results.head += contents;
@@ -41,11 +41,11 @@ SpacebarsTagHandler = class SpacebarsTagHandler {
         const name = attribs.name;
 
         if (! name) {
-          throwParseError("Template has no 'name' attribute");
+          throwCompileError("Template has no 'name' attribute");
         }
 
         if (SpacebarsCompiler.isReservedName(name)) {
-          throwParseError(`Template can't be named "${name}"`);
+          throwCompileError(`Template can't be named "${name}"`);
         }
 
         const renderFuncCode = SpacebarsCompiler.compile(contents, {
@@ -61,7 +61,7 @@ Template.__checkName(${nameLiteral});
 Template[${nameLiteral}] = new Template(${templateDotNameLiteral}, ${renderFuncCode});
 `;
       } else if (tagName === "body") {
-        this.addBodyAttrs(attribs, throwParseError);
+        this.addBodyAttrs(attribs, throwCompileError);
 
         // <body>
         if (hasAttribs) {
@@ -81,24 +81,24 @@ Template.body.addContent(${renderFuncCode});
 Meteor.startup(Template.body.renderToDocument);
 `;
       } else {
-        throwParseError("Expected <template>, <head>, or <body> tag in template file", tagStartIndex);
+        throwCompileError("Expected <template>, <head>, or <body> tag in template file", tagStartIndex);
       }
     } catch (e) {
       if (e.scanner) {
         // The error came from Spacebars
-        throwParseError(e.message, contentsStartIndex + e.offset);
+        throwCompileError(e.message, contentsStartIndex + e.offset);
       } else {
         throw e;
       }
     }
   }
 
-  addBodyAttrs(attrs, throwParseError) {
+  addBodyAttrs(attrs, throwCompileError) {
     Object.keys(attrs).forEach((attr) => {
       const val = attrs[attr];
 
       if (this.results.bodyAttrs.hasOwnProperty(attr) && this.results.bodyAttrs[attr] !== val) {
-        throwParseError(
+        throwCompileError(
           `<body> declarations have conflicting values for the '${attr}' attribute.`);
       }
 
