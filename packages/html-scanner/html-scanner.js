@@ -141,23 +141,18 @@ HtmlScanner = class HtmlScanner {
     this.index += amount;
   }
 
-  throwSpecialError(msg, errorClass, overrideIndex) {
-    const ret = new errorClass;
-    ret.message = msg;
-    ret.file = this.sourceName;
-    const theIndex = (typeof overrideIndex === 'number' ? overrideIndex : this.index);
-    ret.line = this.contents.substring(0, theIndex).split('\n').length;
-    throw ret;
-  }
-
   throwParseError(msg, overrideIndex) {
-    this.throwSpecialError(
-      msg || "bad formatting in template file",
-      TemplateCompiler.CompileError,
-      overrideIndex);
+    const finalIndex = (typeof overrideIndex === 'number' ? overrideIndex : this.index);
+
+    const err = new TemplateCompiler.CompileError();
+    err.message = msg || "bad formatting in template file";
+    err.file = this.sourceName;
+    err.line = this.contents.substring(0, finalIndex).split('\n').length;
+
+    throw err;
   }
 
   throwBodyAttrsError(msg) {
-    this.throwSpecialError(msg, TemplateCompiler.CompileError);
+    this.parseError(msg);
   }
 }
