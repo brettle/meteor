@@ -1,10 +1,12 @@
-handleTag = function handleTag(results, tagName, attribs, contents, throwParseError,
-                        contentsStartIndex, tagStartIndex) {
-  // trim the tag contents.
-  // this is a courtesy and is also relied on by some unit tests.
-  var m = contents.match(/^([ \t\r\n]*)([\s\S]*?)[ \t\r\n]*$/);
-  contentsStartIndex += m[1].length;
-  contents = m[2];
+handleTag = function handleTag(results, tag, throwParseError) {
+
+  const {
+    tagName,
+    attribs,
+    contents,
+    contentsStartIndex,
+    tagStartIndex
+  } = tag;
 
   // do we have 1 or more attribs?
   var hasAttribs = false;

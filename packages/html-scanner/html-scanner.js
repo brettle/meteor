@@ -133,10 +133,22 @@ class SingleFileScan {
       const tagContents = this.rest.slice(0, end.index);
       const contentsStartIndex = this.index;
 
+      // trim the tag contents.
+      // this is a courtesy and is also relied on by some unit tests.
+      var m = tagContents.match(/^([ \t\r\n]*)([\s\S]*?)[ \t\r\n]*$/);
+      const trimmedContentsStartIndex = contentsStartIndex + m[1].length;
+      const trimmedTagContents = m[2];
+
+      const tag = {
+        tagName: tagName,
+        attribs: tagAttribs,
+        contents: trimmedTagContents,
+        contentsStartIndex: trimmedContentsStartIndex,
+        tagStartIndex: tagStartIndex
+      };
+
       // act on the tag
-      handleTag(this.results, tagName, tagAttribs, tagContents,
-        this.throwParseError.bind(this), this.throwBodyAttrsError.bind(this), contentsStartIndex,
-        tagStartIndex);
+      handleTag(this.results, tag, this.throwParseError.bind(this));
 
       // advance afterwards, so that line numbers in errors are correct
       this.advance(end.index + end[0].length);
