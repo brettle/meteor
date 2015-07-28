@@ -1,6 +1,12 @@
 HtmlScanner = {
   scan(sourceName, contents, tagNames) {
-    const scanInstance = new SingleFileScan(sourceName, contents, tagNames);
+    const scanInstance = new SingleFileScan({
+      sourceName,
+      contents,
+      tagNames,
+      handleTag
+    });
+
     return scanInstance.getResults();
   },
 
@@ -9,17 +15,26 @@ HtmlScanner = {
   BodyAttrsError() {}
 }
 
+/**
+ * Scan an HTML file for top-level tags and extract their contents.
+ *
+ * This is a primitive, regex-based scanner.  It scans 
+ * top-level tags, which are allowed to have attributes,
+ * and ignores top-level HTML comments.
+ */
 class SingleFileScan {
-  // Scan a template file for <head>, <body>, and <template>
-  // tags and extract their contents.
-  //
-  // This is a primitive, regex-based scanner.  It scans
-  // top-level tags, which are allowed to have attributes,
-  // and ignores top-level HTML comments.
-
-  // Configure which top-level tags this scanner accepts; all others will cause
-  // an error
-  constructor(sourceName, contents, tagNames) {
+  /**
+   * Initialize and run a scan of a single file
+   * @param  {String} sourceName The filename, used in errors only
+   * @param  {String} contents   The contents of the file
+   * @param  {String[]} tagNames An array of tag names that are accepted at the
+   * top level. If any other tag is encountered, an error is thrown.
+   */
+  constructor({
+      sourceName,
+      contents,
+      tagNames,
+      handleTag}) {
     this.sourceName = sourceName;
     this.contents = contents;
     this.tagNames = tagNames;
@@ -35,15 +50,17 @@ class SingleFileScan {
     };
 
     tagNameRegex = this.tagNames.join("|");
-    const rOpenTag = new RegExp(`^((<(${tagNameRegex})\\b)|(<!--)|(<!DOCTYPE|{{!)|$)`, "i");
+    const openTagRegex = new RegExp(`^((<(${tagNameRegex})\\b)|(<!--)|(<!DOCTYPE|{{!)|$)`, "i");
 
     while (this.rest) {
       // skip whitespace first (for better line numbers)
       this.advance(this.rest.match(/^\s*/)[0].length);
 
-      const match = rOpenTag.exec(this.rest);
-      if (! match)
+      const match = openTagRegex.exec(this.rest);
+
+      if (! match) {
         this.throwParseError(`Expected one of: <${this.tagNames.join('>, <')}>`);
+      }
 
       const matchToken = match[1];
       const matchTokenTagName =  match[3];
@@ -53,8 +70,10 @@ class SingleFileScan {
       const tagStartIndex = this.index;
       this.advance(match.index + match[0].length);
 
-      if (! matchToken)
+      if (! matchToken) {
         break; // matched $ (end of file)
+      }
+
       if (matchTokenComment === '<!--') {
         // top-level HTML comment
         const commentEnd = /--\s*>/.exec(this.rest);
@@ -63,6 +82,7 @@ class SingleFileScan {
         this.advance(commentEnd.index + commentEnd[0].length);
         continue;
       }
+
       if (matchTokenUnsupported) {
         switch (matchTokenUnsupported.toLowerCase()) {
         case '<!doctype':
@@ -72,22 +92,27 @@ class SingleFileScan {
           this.throwParseError(
             "Can't use '{{! }}' outside a template.  Use '<!-- -->'.");
         }
+
         this.throwParseError();
       }
 
       // otherwise, a <tag>
       const tagName = matchTokenTagName.toLowerCase();
       const tagAttribs = {}; // bare name -> value dict
-      const rTagPart = /^\s*((([a-zA-Z0-9:_-]+)\s*=\s*(["'])(.*?)\4)|(>))/;
-      let attr;
+      const tagPartRegex = /^\s*((([a-zA-Z0-9:_-]+)\s*=\s*(["'])(.*?)\4)|(>))/;
+
       // read attributes
-      while ((attr = rTagPart.exec(this.rest))) {
+      let attr;
+      while ((attr = tagPartRegex.exec(this.rest))) {
         const attrToken = attr[1];
         const attrKey = attr[3];
         let attrValue = attr[5];
         this.advance(attr.index + attr[0].length);
-        if (attrToken === '>')
+
+        if (attrToken === '>') {
           break;
+        }
+
         // XXX we don't HTML unescape the attribute value
         // (e.g. to allow "abcd&quot;efg") or protect against
         // collisions with methods of tagAttribs (e.g. for
@@ -95,29 +120,34 @@ class SingleFileScan {
         attrValue = attrValue.match(/^\s*([\s\S]*?)\s*$/)[1]; // trim
         tagAttribs[attrKey] = attrValue;
       }
-      if (! attr) // didn't end on '>'
+
+      if (! attr) { // didn't end on '>'
         this.throwParseError("Parse error in tag");
+      }
+
       // find </tag>
       const end = (new RegExp('</'+tagName+'\\s*>', 'i')).exec(this.rest);
-      if (! end)
+      if (! end) {
         this.throwParseError("unclosed <"+tagName+">");
+      }
+
       const tagContents = this.rest.slice(0, end.index);
       const contentsStartIndex = this.index;
 
-      if (tagName === 'body') {
-        this.addBodyAttrs(tagAttribs);
-      }
-
       // act on the tag
       handleTag(this.results, tagName, tagAttribs, tagContents,
-                              this.throwParseError.bind(this), contentsStartIndex,
-                              tagStartIndex);
+        this.throwParseError.bind(this), this.throwBodyAttrsError.bind(this), contentsStartIndex,
+        tagStartIndex);
 
       // advance afterwards, so that line numbers in errors are correct
       this.advance(end.index + end[0].length);
     }
   }
 
+  /**
+   * Advance the parser
+   * @param  {Number} amount The amount of characters to advance
+   */
   advance(amount) {
     this.rest = this.rest.substring(amount);
     this.index += amount;
@@ -141,19 +171,6 @@ class SingleFileScan {
 
   throwBodyAttrsError(msg) {
     this.throwSpecialError(msg, HtmlScanner.BodyAttrsError);
-  }
-
-  addBodyAttrs(attrs) {
-    Object.keys(attrs).forEach((attr) => {
-      const val = attrs[attr];
-
-      if (this.results.bodyAttrs.hasOwnProperty(attr) && this.results.bodyAttrs[attr] !== val) {
-        this.throwBodyAttrsError(
-          "<body> declarations have conflicting values for the '" + attr + "' attribute.");
-      }
-
-      this.results.bodyAttrs[attr] = val;
-    });
   }
 
   getResults() {

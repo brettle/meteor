@@ -1,4 +1,4 @@
-handleTag = function handleTag(results, tagName, attribs, contents, throwParseError,
+handleTag = function handleTag(results, tagName, attribs, contents, throwParseError, throwBodyAttrsError,
                         contentsStartIndex, tagStartIndex) {
   // trim the tag contents.
   // this is a courtesy and is also relied on by some unit tests.
@@ -47,6 +47,8 @@ handleTag = function handleTag(results, tagName, attribs, contents, throwParseEr
         "Template[" + nameLiteral + "] = new Template(" +
         templateDotNameLiteral + ", " + renderFuncCode + ");\n";
     } else if (tagName === "body") {
+      addBodyAttrs(results, attribs, throwBodyAttrsError);
+
       // <body>
       if (hasAttribs) {
         results.js += "\nMeteor.startup(function() { $('body').attr(" + JSON.stringify(attribs) + "); });\n";
@@ -71,4 +73,17 @@ handleTag = function handleTag(results, tagName, attribs, contents, throwParseEr
       throw e;
     }
   }
+}
+
+function addBodyAttrs(results, attrs, throwBodyAttrsError) {
+  Object.keys(attrs).forEach((attr) => {
+    const val = attrs[attr];
+
+    if (results.bodyAttrs.hasOwnProperty(attr) && results.bodyAttrs[attr] !== val) {
+      throwBodyAttrsError(
+        "<body> declarations have conflicting values for the '" + attr + "' attribute.");
+    }
+
+    results.bodyAttrs[attr] = val;
+  });
 }
