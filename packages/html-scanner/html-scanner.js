@@ -11,8 +11,7 @@ HtmlScanner = {
   },
 
   // Has fields 'message', 'line', 'file'
-  ParseError() {},
-  BodyAttrsError() {}
+  ParseError() {}
 }
 
 /**
@@ -170,7 +169,7 @@ class SingleFileScan {
   }
 
   throwBodyAttrsError(msg) {
-    this.throwSpecialError(msg, HtmlScanner.BodyAttrsError);
+    this.throwSpecialError(msg, HtmlScanner.ParseError);
   }
 
   getResults() {

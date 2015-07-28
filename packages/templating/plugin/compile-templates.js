@@ -42,8 +42,7 @@ class TemplateCompiler extends CachingCompiler {
     try {
       return HtmlScanner.scan(path, contents, ["body", "head", "template"]);
     } catch (e) {
-      if ((e instanceof HtmlScanner.ParseError) ||
-          (e instanceof HtmlScanner.BodyAttrsError)) {
+      if (e instanceof HtmlScanner.ParseError) {
         inputFile.error({
           message: e.message,
           line: e.line
