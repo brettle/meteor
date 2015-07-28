@@ -16,6 +16,7 @@ Package.onUse(function(api) {
   api.export('HtmlScanner');
 
   api.use([
+    'underscore',
     'spacebars-compiler',
     'ecmascript'
   ]);

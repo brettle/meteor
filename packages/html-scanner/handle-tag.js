@@ -1,5 +1,4 @@
 handleTag = function handleTag(results, tag, throwParseError) {
-
   const {
     tagName,
     attribs,
@@ -9,17 +8,13 @@ handleTag = function handleTag(results, tag, throwParseError) {
   } = tag;
 
   // do we have 1 or more attribs?
-  var hasAttribs = false;
-  for(var k in attribs) {
-    if (attribs.hasOwnProperty(k)) {
-      hasAttribs = true;
-      break;
-    }
-  }
+  const hasAttribs = ! _.isEmpty(attribs);
 
   if (tagName === "head") {
-    if (hasAttribs)
+    if (hasAttribs) {
       throwParseError("Attributes on <head> not supported");
+    }
+
     results.head += contents;
     return;
   }
@@ -29,21 +24,23 @@ handleTag = function handleTag(results, tag, throwParseError) {
 
   try {
     if (tagName === "template") {
-      var name = attribs.name;
-      if (! name)
+      const name = attribs.name;
+      
+      if (! name) {
         throwParseError("Template has no 'name' attribute");
+      }
 
-      if (SpacebarsCompiler.isReservedName(name))
+      if (SpacebarsCompiler.isReservedName(name)) {
         throwParseError("Template can't be named \"" + name + "\"");
+      }
 
-      var renderFuncCode = SpacebarsCompiler.compile(
-        contents, {
-          isTemplate: true,
-          sourceName: 'Template "' + name + '"'
-        });
+      const renderFuncCode = SpacebarsCompiler.compile(contents, {
+        isTemplate: true,
+        sourceName: 'Template "' + name + '"'
+      });
 
-      var nameLiteral = JSON.stringify(name);
-      var templateDotNameLiteral = JSON.stringify("Template." + name);
+      const nameLiteral = JSON.stringify(name);
+      const templateDotNameLiteral = JSON.stringify("Template." + name);
 
       results.js += "\nTemplate.__checkName(" + nameLiteral + ");\n" +
         "Template[" + nameLiteral + "] = new Template(" +
@@ -56,11 +53,10 @@ handleTag = function handleTag(results, tag, throwParseError) {
         results.js += "\nMeteor.startup(function() { $('body').attr(" + JSON.stringify(attribs) + "); });\n";
       }
 
-      var renderFuncCode = SpacebarsCompiler.compile(
-        contents, {
-          isBody: true,
-          sourceName: "<body>"
-        });
+      const renderFuncCode = SpacebarsCompiler.compile(contents, {
+        isBody: true,
+        sourceName: "<body>"
+      });
 
       // We may be one of many `<body>` tags.
       results.js += "\nTemplate.body.addContent(" + renderFuncCode + ");\nMeteor.startup(Template.body.renderToDocument);\n";
