@@ -9,7 +9,6 @@ Package.describe({
 
 Package.onUse(function(api) {
   api.addFiles([
-    'handle-tag.js',
     'html-scanner.js'
   ]);
 
@@ -17,8 +16,8 @@ Package.onUse(function(api) {
 
   api.use([
     'underscore',
-    'spacebars-compiler',
-    'ecmascript'
+    'ecmascript',
+    'template-compiler'
   ]);
 });
 
@@ -26,6 +25,7 @@ Package.onTest(function(api) {
   api.use([
     'tinytest',
     'html-scanner',
+    'spacebars-tag-handler',
 
     // minifiers is a weak dependency of spacebars-compiler; adding it here
     // ensures that the output is minified.  (Having it as a weak dependency means

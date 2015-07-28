@@ -17,9 +17,8 @@ Package.registerBuildPlugin({
   // XXX maybe uglify should be applied by this plugin instead of via magic
   // weak dependency.
   use: [
-    'minifiers',
-    'spacebars-compiler',
-    'caching-compiler',
+    'template-compiler',
+    'spacebars-tag-handler',
     'ecmascript',
     'html-scanner'
   ],

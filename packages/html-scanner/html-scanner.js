@@ -1,21 +1,3 @@
-HtmlScanner = {
-  scan(sourceName, contents, tagNames) {
-    const tagHandler = new SpacebarsTagHandler();
-
-    const scanInstance = new HTMLTagScanner({
-      sourceName,
-      contents,
-      tagNames,
-      tagHandler
-    });
-
-    return tagHandler.getResults();
-  },
-
-  // Has fields 'message', 'line', 'file'
-  ParseError() {}
-}
-
 /**
  * Scan an HTML file for top-level tags and extract their contents.
  *
@@ -23,7 +5,7 @@ HtmlScanner = {
  * top-level tags, which are allowed to have attributes,
  * and ignores top-level HTML comments.
  */
-class HTMLTagScanner {
+HtmlScanner = class HtmlScanner {
   /**
    * Initialize and run a scan of a single file
    * @param  {String} sourceName The filename, used in errors only
@@ -171,11 +153,11 @@ class HTMLTagScanner {
   throwParseError(msg, overrideIndex) {
     this.throwSpecialError(
       msg || "bad formatting in template file",
-      HtmlScanner.ParseError,
+      TemplateCompiler.CompileError,
       overrideIndex);
   }
 
   throwBodyAttrsError(msg) {
-    this.throwSpecialError(msg, HtmlScanner.ParseError);
+    this.throwSpecialError(msg, TemplateCompiler.CompileError);
   }
 }

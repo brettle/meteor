@@ -1,4 +1,4 @@
-const path = Plugin.path;
+const path = Npm.require('path');
 const Future = Npm.require('fibers/future');
 const LRU = Npm.require('lru-cache');
 const async = Npm.require('async');
