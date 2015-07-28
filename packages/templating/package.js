@@ -20,10 +20,10 @@ Package.registerBuildPlugin({
     'minifiers',
     'spacebars-compiler',
     'caching-compiler',
-    'ecmascript'
+    'ecmascript',
+    'html-scanner'
   ],
   sources: [
-    'plugin/html_scanner.js',
     'plugin/compile-templates.js'
   ]
 });
@@ -45,20 +45,4 @@ Package.onUse(function (api) {
   // 'meteor' and 'blaze'.
   api.use('blaze');
   api.imply(['meteor', 'blaze'], 'client');
-});
-
-Package.onTest(function (api) {
-  api.use('tinytest');
-  api.use('htmljs');
-  api.use('templating');
-  api.use('underscore');
-  api.use(['test-helpers', 'session', 'tracker',
-           'minimongo'], 'client');
-  api.use('spacebars-compiler');
-  api.use('minifiers'); // ensure compiler output is beautified
-
-  api.addFiles([
-    'plugin/html_scanner.js',
-    'scanner_tests.js'
-  ], 'server');
 });

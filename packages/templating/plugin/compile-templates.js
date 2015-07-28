@@ -40,10 +40,10 @@ class TemplateCompiler extends CachingCompiler {
     const contents = inputFile.getContentsAsString();
     const path = inputFile.getPathInPackage();
     try {
-      return html_scanner.scan(contents, path);
+      return HtmlScanner.scan(contents, path);
     } catch (e) {
-      if ((e instanceof html_scanner.ParseError) ||
-          (e instanceof html_scanner.BodyAttrsError)) {
+      if ((e instanceof HtmlScanner.ParseError) ||
+          (e instanceof HtmlScanner.BodyAttrsError)) {
         inputFile.error({
           message: e.message,
           line: e.line

@@ -1,4 +1,4 @@
-html_scanner = {
+HtmlScanner = {
   // Scan a template file for <head>, <body>, and <template>
   // tags and extract their contents.
   //
@@ -32,14 +32,14 @@ html_scanner = {
     var throwParseError = function (msg, overrideIndex) {
       throwSpecialError(
         msg || "bad formatting in template file",
-        html_scanner.ParseError,
+        HtmlScanner.ParseError,
         overrideIndex);
     };
     var throwBodyAttrsError = function (msg) {
-      throwSpecialError(msg, html_scanner.BodyAttrsError);
+      throwSpecialError(msg, HtmlScanner.BodyAttrsError);
     };
 
-    var results = html_scanner._initResults();
+    var results = HtmlScanner._initResults();
     var rOpenTag = /^((<(template|head|body)\b)|(<!--)|(<!DOCTYPE|{{!)|$)/i;
 
     while (rest) {
@@ -115,7 +115,7 @@ html_scanner = {
       }
 
       // act on the tag
-      html_scanner._handleTag(results, tagName, tagAttribs, tagContents,
+      HtmlScanner._handleTag(results, tagName, tagAttribs, tagContents,
                               throwParseError, contentsStartIndex,
                               tagStartIndex);
 
