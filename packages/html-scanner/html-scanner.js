@@ -1,4 +1,15 @@
-HtmlScanner = class HtmlScanner {
+HtmlScanner = {
+  scan(sourceName, contents, tagNames) {
+    const scanInstance = new SingleFileScan(sourceName, contents, tagNames);
+    return scanInstance.getResults();
+  },
+
+  // Has fields 'message', 'line', 'file'
+  ParseError() {},
+  BodyAttrsError() {}
+}
+
+class SingleFileScan {
   // Scan a template file for <head>, <body>, and <template>
   // tags and extract their contents.
   //
@@ -8,49 +19,45 @@ HtmlScanner = class HtmlScanner {
 
   // Configure which top-level tags this scanner accepts; all others will cause
   // an error
-  constructor(tagNames) {
-    this.tagNames = tagNames;
-  }
-
-  // Note: source_name is only used for errors (so it's not part of the cache
-  // key in compile-templates.js).
-  scan(contents, sourceName) {
+  constructor(sourceName, contents, tagNames) {
     this.sourceName = sourceName;
     this.contents = contents;
+    this.tagNames = tagNames;
 
     this.rest = contents;
-    this.index = 0; 
+    this.index = 0;
 
-    var results = {};
-    results.head = '';
-    results.body = '';
-    results.js = '';
-    results.bodyAttrs = {};
+    this.results = {
+      head: '',
+      body: '',
+      js: '',
+      bodyAttrs: {}
+    };
 
-    tagNames = this.tagNames.join("|");
-    var rOpenTag = new RegExp(`^((<(${tagNames})\\b)|(<!--)|(<!DOCTYPE|{{!)|$)`, "i");
+    tagNameRegex = this.tagNames.join("|");
+    const rOpenTag = new RegExp(`^((<(${tagNameRegex})\\b)|(<!--)|(<!DOCTYPE|{{!)|$)`, "i");
 
     while (this.rest) {
       // skip whitespace first (for better line numbers)
       this.advance(this.rest.match(/^\s*/)[0].length);
 
-      var match = rOpenTag.exec(this.rest);
+      const match = rOpenTag.exec(this.rest);
       if (! match)
         this.throwParseError(`Expected one of: <${this.tagNames.join('>, <')}>`);
 
-      var matchToken = match[1];
-      var matchTokenTagName =  match[3];
-      var matchTokenComment = match[4];
-      var matchTokenUnsupported = match[5];
+      const matchToken = match[1];
+      const matchTokenTagName =  match[3];
+      const matchTokenComment = match[4];
+      const matchTokenUnsupported = match[5];
 
-      var tagStartIndex = this.index;
+      const tagStartIndex = this.index;
       this.advance(match.index + match[0].length);
 
       if (! matchToken)
         break; // matched $ (end of file)
       if (matchTokenComment === '<!--') {
         // top-level HTML comment
-        var commentEnd = /--\s*>/.exec(this.rest);
+        const commentEnd = /--\s*>/.exec(this.rest);
         if (! commentEnd)
           this.throwParseError("unclosed HTML comment in template file");
         this.advance(commentEnd.index + commentEnd[0].length);
@@ -69,15 +76,15 @@ HtmlScanner = class HtmlScanner {
       }
 
       // otherwise, a <tag>
-      var tagName = matchTokenTagName.toLowerCase();
-      var tagAttribs = {}; // bare name -> value dict
-      var rTagPart = /^\s*((([a-zA-Z0-9:_-]+)\s*=\s*(["'])(.*?)\4)|(>))/;
-      var attr;
+      const tagName = matchTokenTagName.toLowerCase();
+      const tagAttribs = {}; // bare name -> value dict
+      const rTagPart = /^\s*((([a-zA-Z0-9:_-]+)\s*=\s*(["'])(.*?)\4)|(>))/;
+      let attr;
       // read attributes
       while ((attr = rTagPart.exec(this.rest))) {
-        var attrToken = attr[1];
-        var attrKey = attr[3];
-        var attrValue = attr[5];
+        const attrToken = attr[1];
+        const attrKey = attr[3];
+        let attrValue = attr[5];
         this.advance(attr.index + attr[0].length);
         if (attrToken === '>')
           break;
@@ -91,26 +98,24 @@ HtmlScanner = class HtmlScanner {
       if (! attr) // didn't end on '>'
         this.throwParseError("Parse error in tag");
       // find </tag>
-      var end = (new RegExp('</'+tagName+'\\s*>', 'i')).exec(this.rest);
+      const end = (new RegExp('</'+tagName+'\\s*>', 'i')).exec(this.rest);
       if (! end)
         this.throwParseError("unclosed <"+tagName+">");
-      var tagContents = this.rest.slice(0, end.index);
-      var contentsStartIndex = this.index;
+      const tagContents = this.rest.slice(0, end.index);
+      const contentsStartIndex = this.index;
 
       if (tagName === 'body') {
-        this.addBodyAttrs(results, tagAttribs);
+        this.addBodyAttrs(tagAttribs);
       }
 
       // act on the tag
-      handleTag(results, tagName, tagAttribs, tagContents,
+      handleTag(this.results, tagName, tagAttribs, tagContents,
                               this.throwParseError.bind(this), contentsStartIndex,
                               tagStartIndex);
 
       // advance afterwards, so that line numbers in errors are correct
       this.advance(end.index + end[0].length);
     }
-
-    return results;
   }
 
   advance(amount) {
@@ -119,10 +124,10 @@ HtmlScanner = class HtmlScanner {
   }
 
   throwSpecialError(msg, errorClass, overrideIndex) {
-    var ret = new errorClass;
+    const ret = new errorClass;
     ret.message = msg;
     ret.file = this.sourceName;
-    var theIndex = (typeof overrideIndex === 'number' ? overrideIndex : this.index);
+    const theIndex = (typeof overrideIndex === 'number' ? overrideIndex : this.index);
     ret.line = this.contents.substring(0, theIndex).split('\n').length;
     throw ret;
   }
@@ -138,21 +143,20 @@ HtmlScanner = class HtmlScanner {
     this.throwSpecialError(msg, HtmlScanner.BodyAttrsError);
   }
 
-  addBodyAttrs(results, attrs) {
+  addBodyAttrs(attrs) {
     Object.keys(attrs).forEach((attr) => {
-      var val = attrs[attr];
+      const val = attrs[attr];
 
-      if (results.bodyAttrs.hasOwnProperty(attr) && results.bodyAttrs[attr] !== val) {
+      if (this.results.bodyAttrs.hasOwnProperty(attr) && this.results.bodyAttrs[attr] !== val) {
         this.throwBodyAttrsError(
           "<body> declarations have conflicting values for the '" + attr + "' attribute.");
       }
 
-      results.bodyAttrs[attr] = val;
+      this.results.bodyAttrs[attr] = val;
     });
   }
-};
 
-
-// Has fields 'message', 'line', 'file'
-HtmlScanner.ParseError = function () {};
-HtmlScanner.BodyAttrsError = function () {};
+  getResults() {
+    return this.results;
+  }
+}

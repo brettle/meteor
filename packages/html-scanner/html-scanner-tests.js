@@ -45,76 +45,78 @@ Tinytest.add("html-scanner - html scanner", function (test) {
     test.equal(results.head, expectHead || '');
   };
 
-  htmlScanner = new HtmlScanner(["body", "head", "template"]);
+  function scanForTest(contents) {
+    return HtmlScanner.scan("", contents, ["body", "head", "template"]);
+  }
 
   checkError(function() {
-    return htmlScanner.scan("asdf");
+    return scanForTest("asdf");
   }, "Expected one of: <body>, <head>, <template>", 1);
 
   // body all on one line
   checkResults(
-    htmlScanner.scan("<body>Hello</body>"),
+    scanForTest("<body>Hello</body>"),
     simpleBody('"Hello"'));
 
   // multi-line body, contents trimmed
   checkResults(
-    htmlScanner.scan("\n\n\n<body>\n\nHello\n\n</body>\n\n\n"),
+    scanForTest("\n\n\n<body>\n\nHello\n\n</body>\n\n\n"),
     simpleBody('"Hello"'));
 
   // same as previous, but with various HTML comments
   checkResults(
-    htmlScanner.scan("\n<!--\n\nfoo\n-->\n<!-- -->\n"+
+    scanForTest("\n<!--\n\nfoo\n-->\n<!-- -->\n"+
                       "<body>\n\nHello\n\n</body>\n\n<!----\n>\n\n"),
     simpleBody('"Hello"'));
 
   // head and body
   checkResults(
-    htmlScanner.scan("<head>\n<title>Hello</title>\n</head>\n\n<body>World</body>\n\n"),
+    scanForTest("<head>\n<title>Hello</title>\n</head>\n\n<body>World</body>\n\n"),
     simpleBody('"World"'),
     "<title>Hello</title>");
 
   // head and body with tag whitespace
   checkResults(
-    htmlScanner.scan("<head\n>\n<title>Hello</title>\n</head  >\n\n<body>World</body\n\n>\n\n"),
+    scanForTest("<head\n>\n<title>Hello</title>\n</head  >\n\n<body>World</body\n\n>\n\n"),
     simpleBody('"World"'),
     "<title>Hello</title>");
 
   // head, body, and template
   checkResults(
-    htmlScanner.scan("<head>\n<title>Hello</title>\n</head>\n\n<body>World</body>\n\n"+
+    scanForTest("<head>\n<title>Hello</title>\n</head>\n\n<body>World</body>\n\n"+
                       '<template name="favoritefood">\n  pizza\n</template>\n'),
     simpleBody('"World"') + simpleTemplate('"favoritefood"', '"pizza"'),
     "<title>Hello</title>");
 
   // one-line template
   checkResults(
-    htmlScanner.scan('<template name="favoritefood">pizza</template>'),
+    scanForTest('<template name="favoritefood">pizza</template>'),
     simpleTemplate('"favoritefood"', '"pizza"'));
 
   // template with other attributes
   checkResults(
-    htmlScanner.scan('<template foo="bar" name="favoritefood" baz="qux">'+
+    scanForTest('<template foo="bar" name="favoritefood" baz="qux">'+
                       'pizza</template>'),
     simpleTemplate('"favoritefood"', '"pizza"'));
 
   // whitespace around '=' in attributes and at end of tag
   checkResults(
-    htmlScanner.scan('<template foo = "bar" name  ="favoritefood" baz= "qux"  >'+
+    scanForTest('<template foo = "bar" name  ="favoritefood" baz= "qux"  >'+
                       'pizza</template\n\n>'),
     simpleTemplate('"favoritefood"', '"pizza"'));
 
   // whitespace around template name
   checkResults(
-    htmlScanner.scan('<template name=" favoritefood  ">pizza</template>'),
+    scanForTest('<template name=" favoritefood  ">pizza</template>'),
     simpleTemplate('"favoritefood"', '"pizza"'));
 
   // single quotes around template name
   checkResults(
-    htmlScanner.scan('<template name=\'the "cool" template\'>'+
+    scanForTest('<template name=\'the "cool" template\'>'+
                       'pizza</template>'),
     simpleTemplate('"the \\"cool\\" template"', '"pizza"'));
 
-  checkResults(htmlScanner.scan('<body foo="bar">\n  Hello\n</body>'),
+  checkResults(scanForTest('<body foo="bar">\n  Hello\n</body>'),
     "\nMeteor.startup(function() { $('body').attr({\"foo\":\"bar\"}); });\n" + simpleBody('"Hello"'));
 
   // error cases; exact line numbers are not critical, these just reflect
@@ -122,31 +124,31 @@ Tinytest.add("html-scanner - html scanner", function (test) {
 
   // unclosed body (error mentions body)
   checkError(function() {
-    return htmlScanner.scan("\n\n<body>\n  Hello\n</body");
+    return scanForTest("\n\n<body>\n  Hello\n</body");
   }, "body", 3);
 
   // bad open tag
   checkError(function() {
-    return htmlScanner.scan("\n\n\n<bodyd>\n  Hello\n</body>");
+    return scanForTest("\n\n\n<bodyd>\n  Hello\n</body>");
   }, "Expected one of: <body>, <head>, <template>", 4);
   checkError(function() {
-    return htmlScanner.scan("\n\n\n\n<body foo=>\n  Hello\n</body>");
+    return scanForTest("\n\n\n\n<body foo=>\n  Hello\n</body>");
   }, "error in tag", 5);
 
   // unclosed tag
   checkError(function() {
-    return htmlScanner.scan("\n<body>Hello");
+    return scanForTest("\n<body>Hello");
   }, "nclosed", 2);
 
   // unnamed template
   checkError(function() {
-    return htmlScanner.scan(
+    return scanForTest(
       "\n\n<template>Hi</template>\n\n<template>Hi</template>");
   }, "name", 3);
 
   // helpful doctype message
   checkError(function() {
-    return htmlScanner.scan(
+    return scanForTest(
       '<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" '+
         '"http://www.w3.org/TR/html4/strict.dtd">'+
         '\n\n<head>\n</head>');
@@ -154,24 +156,24 @@ Tinytest.add("html-scanner - html scanner", function (test) {
 
   // lowercase basic doctype
   checkError(function() {
-    return htmlScanner.scan(
+    return scanForTest(
       '<!doctype html>');
   }, "DOCTYPE", 1);
 
   // attributes on head not supported
   checkError(function() {
-    return htmlScanner.scan('<head foo="bar">\n  Hello\n</head>');
+    return scanForTest('<head foo="bar">\n  Hello\n</head>');
   }, "<head>", 1);
 
   // can't mismatch quotes
   checkError(function() {
-    return htmlScanner.scan('<template name="foo\'>'+
+    return scanForTest('<template name="foo\'>'+
                              'pizza</template>');
   }, "error in tag", 1);
 
   // unexpected <html> at top level
   checkError(function() {
-    return htmlScanner.scan('\n<html>\n</html>');
+    return scanForTest('\n<html>\n</html>');
   }, "Expected one of: <body>, <head>, <template>", 2);
 
 });
