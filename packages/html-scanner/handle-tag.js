@@ -1,4 +1,4 @@
-handleTag = function handleTag(results, tagName, attribs, contents, throwParseError, throwBodyAttrsError,
+handleTag = function handleTag(results, tagName, attribs, contents, throwParseError,
                         contentsStartIndex, tagStartIndex) {
   // trim the tag contents.
   // this is a courtesy and is also relied on by some unit tests.
@@ -47,7 +47,7 @@ handleTag = function handleTag(results, tagName, attribs, contents, throwParseEr
         "Template[" + nameLiteral + "] = new Template(" +
         templateDotNameLiteral + ", " + renderFuncCode + ");\n";
     } else if (tagName === "body") {
-      addBodyAttrs(results, attribs, throwBodyAttrsError);
+      addBodyAttrs(results, attribs, throwParseError);
 
       // <body>
       if (hasAttribs) {
@@ -75,12 +75,12 @@ handleTag = function handleTag(results, tagName, attribs, contents, throwParseEr
   }
 }
 
-function addBodyAttrs(results, attrs, throwBodyAttrsError) {
+function addBodyAttrs(results, attrs, throwParseError) {
   Object.keys(attrs).forEach((attr) => {
     const val = attrs[attr];
 
     if (results.bodyAttrs.hasOwnProperty(attr) && results.bodyAttrs[attr] !== val) {
-      throwBodyAttrsError(
+      throwParseError(
         "<body> declarations have conflicting values for the '" + attr + "' attribute.");
     }
 
