@@ -14,9 +14,9 @@ Package.registerBuildPlugin({
   name: "compileStaticHtmlBatch",
   use: [
     'template-compiler',
-    'static-html-tag-handler',
     'ecmascript',
-    'html-scanner'
+    'html-scanner',
+    'underscore'
   ],
   sources: [
     'static-html.js'
@@ -24,7 +24,6 @@ Package.registerBuildPlugin({
 });
 
 Package.onUse(function(api) {
-  api.addFiles('static-html.js');
   api.use('isobuild:compiler-plugin@1.0.0');
 
   // Body attributes are compiled to code that uses Meteor.startup
