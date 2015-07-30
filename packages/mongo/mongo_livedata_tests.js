@@ -3122,7 +3122,7 @@ Meteor.isServer && Tinytest.add("mongo-livedata - npm modules", function (test) 
 });
 
 if (Meteor.isServer) {
-  Tinytest.add("mongo-livedata - remove doesn't accept an array as a selector #4804", function (test) {
+  Tinytest.add("mongo-livedata - update/remove don't accept an array as a selector #4804", function (test) {
     var collection = new Mongo.Collection(Random.id());
 
     _.times(10, function () {
@@ -3131,8 +3131,15 @@ if (Meteor.isServer) {
 
     test.equal(collection.find().count(), 10);
 
-    test.throws(function () {
-      collection.remove([]);
+    // Test several array-related selectors
+    _.each([[], [1, 2, 3], [{}]], function (selector) {
+      test.throws(function () {
+        collection.remove(selector);
+      });
+
+      test.throws(function () {
+        collection.update(selector, {$set: 5});
+      });
     });
     
     test.equal(collection.find().count(), 10);
