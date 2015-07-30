@@ -11,6 +11,10 @@ Tinytest.add("templating-tools - html scanner", function (test) {
     try {
       f();
     } catch (e) {
+      if (! e instanceof TemplatingTools.CompileError) {
+        throw e;
+      }
+
       if (e.line === lineNum)
         test.ok();
       else

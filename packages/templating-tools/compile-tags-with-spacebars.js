@@ -113,7 +113,7 @@ Meteor.startup(Template.body.renderToDocument);
   throwCompileError(message, overrideIndex) {
     const finalIndex = (typeof overrideIndex === 'number' ? overrideIndex : this.tag.tagStartIndex);
 
-    const err = new Error();
+    const err = new TemplatingTools.CompileError();
     err.message = message || "bad formatting in template file";
     err.file = this.tag.sourceName;
     err.line = this.tag.fileContents.substring(0, finalIndex).split('\n').length;
