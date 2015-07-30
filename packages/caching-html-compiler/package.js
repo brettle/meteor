@@ -14,6 +14,7 @@ Package.onUse(function(api) {
     'ecmascript'
   ]);
 
-  api.addFiles('template-compiler.js', 'server');
+  api.addFiles('caching-html-compiler.js', 'server');
+
   api.export("CachingHtmlCompiler", 'server');
 });
