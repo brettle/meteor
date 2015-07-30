@@ -13,6 +13,7 @@ Package.describe({
 Package.onUse(function(api) {
   api.use([
     'caching-compiler',
+    'templating-tools',
     'ecmascript'
   ]);
 

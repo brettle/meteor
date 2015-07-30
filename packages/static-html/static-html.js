@@ -2,7 +2,17 @@ Plugin.registerCompiler({
   extensions: ['html'],
   archMatching: 'web',
   isTemplate: true
-}, () => new TemplateCompiler("static-html", TemplatingTools.scanHtmlForTags, StaticHtmlTagHandler));
+}, () => new TemplateCompiler("static-html", TemplatingTools.scanHtmlForTags, compileTagsToStaticHtml));
+
+function compileTagsToStaticHtml(tags) {
+  var handler = new StaticHtmlTagHandler();
+
+  tags.forEach((tag) => {
+    handler.addTagToResults(tag);
+  });
+
+  return handler.getResults();
+};
 
 class StaticHtmlTagHandler {
   constructor() {
@@ -18,7 +28,7 @@ class StaticHtmlTagHandler {
     return this.results;
   }
 
-  handleTag(tag, throwCompileError) {
+  addTagToResults(tag, throwCompileError) {
     const {
       tagName,
       attribs,
