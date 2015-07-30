@@ -67,13 +67,6 @@ Template[${nameLiteral}] = new Template(${templateDotNameLiteral}, ${renderFuncC
       } else if (this.tag.tagName === "body") {
         this.addBodyAttrs(this.tag.attribs);
 
-        // <body>
-        if (hasAttribs) {
-          this.results.js += `
-Meteor.startup(function() { $('body').attr(${JSON.stringify(this.tag.attribs)}); });
-`;
-        }
-
         const renderFuncCode = SpacebarsCompiler.compile(this.tag.contents, {
           isBody: true,
           sourceName: "<body>"

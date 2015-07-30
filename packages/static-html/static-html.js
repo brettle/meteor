@@ -4,6 +4,8 @@ Plugin.registerCompiler({
   isTemplate: true
 }, () => new CachingHtmlCompiler("static-html", TemplatingTools.scanHtmlForTags, compileTagsToStaticHtml));
 
+// Same API as TutorialTools.compileTagsWithSpacebars, but instead of compiling
+// with Spacebars, it just returns static HTML
 function compileTagsToStaticHtml(tags) {
   var handler = new StaticHtmlTagHandler();
 
@@ -55,12 +57,6 @@ class StaticHtmlTagHandler {
     try {
       if (tagName === "body") {
         this.addBodyAttrs(attribs, throwCompileError);
-
-        if (hasAttribs) {
-          this.results.js += `
-Meteor.startup(function() { $('body').attr(${JSON.stringify(attribs)}); });
-`;
-        }
 
         // We may be one of many `<body>` tags.
         this.results.body += contents;

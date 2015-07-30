@@ -74,6 +74,8 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
 
   // Implements method from CachingCompilerBase
   addCompileResult(inputFile, compileResult) {
+    let allJavaScript = "";
+
     if (compileResult.head) {
       inputFile.addHtml({ section: "head", data: compileResult.head });
     }
@@ -83,6 +85,36 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
     }
 
     if (compileResult.js) {
+      allJavaScript += compileResult.js;
+    }
+
+    if (! _.isEmpty(compileResult.bodyAttrs)) {
+      Object.keys(compileResult.bodyAttrs).forEach((attr) => {
+        const value = compileResult.bodyAttrs[attr];
+        if (this._bodyAttrInfo.hasOwnProperty(attr) &&
+            this._bodyAttrInfo[attr].value !== value) {
+          // two conflicting attributes on <body> tags in two different template
+          // files
+          inputFile.error({
+            message:
+            `<body> declarations have conflicting values for the '${ attr }' ` +
+              `attribute in the following files: ` +
+              this._bodyAttrInfo[attr].inputFile.getPathInPackage() +
+              `, ${ inputFile.getPathInPackage() }`
+          });
+        } else {
+          this._bodyAttrInfo[attr] = {inputFile, value};
+        }
+      });
+
+      // Add JavaScript code to set attributes on body
+      allJavaScript += `
+Meteor.startup(function() { $('body').attr(${JSON.stringify(compileResult.bodyAttrs)}); });
+`;
+    }
+    
+
+    if (allJavaScript) {
       const filePath = inputFile.getPathInPackage();
       // XXX this path manipulation may be unnecessarily complex
       let pathPart = path.dirname(filePath);
@@ -97,26 +129,8 @@ CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
 
       inputFile.addJavaScript({
         path: path.join(pathPart, "template." + basename + ".js"),
-        data: compileResult.js
+        data: allJavaScript
       });
     }
-
-    Object.keys(compileResult.bodyAttrs).forEach((attr) => {
-      const value = compileResult.bodyAttrs[attr];
-      if (this._bodyAttrInfo.hasOwnProperty(attr) &&
-          this._bodyAttrInfo[attr].value !== value) {
-        // two conflicting attributes on <body> tags in two different template
-        // files
-        inputFile.error({
-          message:
-          `<body> declarations have conflicting values for the '${ attr }' ` +
-            `attribute in the following files: ` +
-            this._bodyAttrInfo[attr].inputFile.getPathInPackage() +
-            `, ${ inputFile.getPathInPackage() }`
-        });
-      } else {
-        this._bodyAttrInfo[attr] = {inputFile, value};
-      }
-    });
   }
 }
