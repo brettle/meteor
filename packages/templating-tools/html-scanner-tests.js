@@ -43,10 +43,11 @@ Tinytest.add("templating-tools - html scanner", function (test) {
       ', (function() {\n  var view = this;\n  return ' + content + ';\n}));\n';
   };
 
-  var checkResults = function(results, expectJs, expectHead) {
+  var checkResults = function(results, expectJs, expectHead, expectBodyAttrs) {
     test.equal(results.body, '');
     test.equal(results.js, expectJs || '');
     test.equal(results.head, expectHead || '');
+    test.equal(results.bodyAttrs, expectBodyAttrs || {});
   };
 
   function scanForTest(contents) {
@@ -126,8 +127,7 @@ Tinytest.add("templating-tools - html scanner", function (test) {
                       'pizza</template>'),
     simpleTemplate('"the \\"cool\\" template"', '"pizza"'));
 
-  checkResults(scanForTest('<body foo="bar">\n  Hello\n</body>'),
-    "\nMeteor.startup(function() { $('body').attr({\"foo\":\"bar\"}); });\n" + simpleBody('"Hello"'));
+  checkResults(scanForTest('<body foo="bar">\n  Hello\n</body>'), simpleBody('"Hello"'), "", {foo: "bar"});
 
   // error cases; exact line numbers are not critical, these just reflect
   // the current implementation
