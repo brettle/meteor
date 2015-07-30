@@ -9,6 +9,7 @@ Package.describe({
 
 Package.onUse(function(api) {
   api.use([
+    'underscore',
     'caching-compiler',
     'templating-tools',
     'ecmascript'
