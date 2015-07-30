@@ -105,5 +105,3 @@ TemplateCompiler = class TemplateCompiler extends CachingCompiler {
     });
   }
 }
-
-TemplateCompiler.CompileError = function () {};
