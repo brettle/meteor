@@ -20,6 +20,8 @@ Constructs a new CachingHtmlCompiler that can be passed into templating.
 2. `tagScannerFunc` A function that takes a string representing a template file as input, and returns an array of Tag objects. See the README for `templating-tools` for more information about the Tag object.
 3. `tagHandlerFunc` A function that takes an array of Tag objects (the output of the previous argument) and returns an object with `js`, `body`, `head`, and `bodyAttr` properties, which will be added to the app through the build plugin API.
 
+#### Example
+
 Here is some example code from the `templating` package:
 
 ```js
