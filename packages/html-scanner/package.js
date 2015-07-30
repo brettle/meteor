@@ -24,7 +24,8 @@ Package.onTest(function(api) {
   api.use([
     'tinytest',
     'html-scanner',
-    'spacebars-tag-handler',
+    'compile-tags-with-spacebars',
+    'ecmascript',
 
     // minifiers is a weak dependency of spacebars-compiler; adding it here
     // ensures that the output is minified.  (Having it as a weak dependency means

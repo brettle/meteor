@@ -1,5 +1,5 @@
 Package.describe({
-  name: 'spacebars-tag-handler',
+  name: 'compile-tags-with-spacebars',
   version: '0.0.1',
   // Brief, one-line summary of the package.
   summary: '',
@@ -16,6 +16,6 @@ Package.onUse(function(api) {
     'spacebars-compiler',
     'underscore'
   ]);
-  api.addFiles('spacebars-tag-handler.js');
-  api.export("SpacebarsTagHandler");
+  api.addFiles('compile-tags-with-spacebars.js');
+  api.export("compileTagsWithSpacebars");
 });

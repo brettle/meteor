@@ -3,7 +3,7 @@ const path = Plugin.path;
 // The CompileResult type for this CachingCompiler is the return value of
 // htmlScanner.scan: a {js, head, body, bodyAttrs} object.
 TemplateCompiler = class TemplateCompiler extends CachingCompiler {
-  constructor(name, tagScannerClass, tagHandlerClass) {
+  constructor(name, tagScannerFunc, tagHandlerFunc) {
     super({
       compilerName: name,
       defaultCacheSize: 1024*1024*10,
@@ -11,8 +11,8 @@ TemplateCompiler = class TemplateCompiler extends CachingCompiler {
 
     this._bodyAttrInfo = null;
 
-    this._tagScannerClass = tagScannerClass;
-    this._tagHandlerClass = tagHandlerClass;
+    this._tagScannerFunc = tagScannerFunc;
+    this._tagHandlerFunc = tagHandlerFunc;
   }
 
   compileResultSize(compileResult) {
@@ -38,17 +38,14 @@ TemplateCompiler = class TemplateCompiler extends CachingCompiler {
     const contents = inputFile.getContentsAsString();
     const inputPath = inputFile.getPathInPackage();
     try {
-      const tagHandler = new this._tagHandlerClass();
-
-      const scanner = new this._tagScannerClass({
+      const tags = this._tagScannerFunc({
         sourceName: inputPath,
         contents: contents,
         tagNames: ["body", "head", "template"],
-        tagHandler: tagHandler,
         compileErrorClass: TemplateCompiler.CompileError
       });
 
-      return tagHandler.getResults();
+      return this._tagHandlerFunc(tags);
     } catch (e) {
       if (e instanceof TemplateCompiler.CompileError) {
         inputFile.error({

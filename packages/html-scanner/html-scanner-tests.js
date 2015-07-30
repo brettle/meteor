@@ -46,17 +46,14 @@ Tinytest.add("html-scanner - html scanner", function (test) {
   };
 
   function scanForTest(contents) {
-    const tagHandler = new SpacebarsTagHandler();
-
-    const scanner = new HtmlScanner({
+    const tags = HtmlScanner.scan({
       sourceName: "",
       contents: contents,
       tagNames: ["body", "head", "template"],
-      tagHandler: tagHandler,
       compileErrorClass: function () {}
     });
 
-    return tagHandler.getResults();
+    return compileTagsWithSpacebars(tags);
   }
 
   checkError(function() {

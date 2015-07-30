@@ -1,3 +1,10 @@
+HtmlScanner = {
+  scan(options) {
+    const scan = new HtmlScan(options);
+    return scan.getTags();
+  }
+};
+
 /**
  * Scan an HTML file for top-level tags and extract their contents. Pass them to
  * a tag handler (an object with a handleTag method)
@@ -6,7 +13,7 @@
  * top-level tags, which are allowed to have attributes,
  * and ignores top-level HTML comments.
  */
-HtmlScanner = class HtmlScanner {
+class HtmlScan {
   /**
    * Initialize and run a scan of a single file
    * @param  {String} sourceName The filename, used in errors only
@@ -18,7 +25,6 @@ HtmlScanner = class HtmlScanner {
         sourceName,
         contents,
         tagNames,
-        tagHandler,
         compileErrorClass
       }) {
     this.sourceName = sourceName;
@@ -28,6 +34,8 @@ HtmlScanner = class HtmlScanner {
 
     this.rest = contents;
     this.index = 0;
+
+    this.tags = [];
 
     tagNameRegex = this.tagNames.join("|");
     const openTagRegex = new RegExp(`^((<(${tagNameRegex})\\b)|(<!--)|(<!DOCTYPE|{{!)|$)`, "i");
@@ -125,11 +133,13 @@ HtmlScanner = class HtmlScanner {
         attribs: tagAttribs,
         contents: trimmedTagContents,
         contentsStartIndex: trimmedContentsStartIndex,
-        tagStartIndex: tagStartIndex
+        tagStartIndex: tagStartIndex,
+        fileContents: this.contents,
+        sourceName: this.sourceName
       };
 
-      // act on the tag
-      tagHandler.handleTag(tag, this.throwCompileError.bind(this));
+      // save the tag
+      this.tags.push(tag);
 
       // advance afterwards, so that line numbers in errors are correct
       this.advance(end.index + end[0].length);
@@ -158,5 +168,9 @@ HtmlScanner = class HtmlScanner {
 
   throwBodyAttrsError(msg) {
     this.parseError(msg);
+  }
+
+  getTags() {
+    return this.tags;
   }
 }

@@ -18,7 +18,7 @@ Package.registerBuildPlugin({
   // weak dependency.
   use: [
     'template-compiler',
-    'spacebars-tag-handler',
+    'compile-tags-with-spacebars',
     'ecmascript',
     'html-scanner'
   ],
