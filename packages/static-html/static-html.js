@@ -2,7 +2,7 @@ Plugin.registerCompiler({
   extensions: ['html'],
   archMatching: 'web',
   isTemplate: true
-}, () => new TemplateCompiler("static-html", TemplatingTools.scanHtmlForTags, compileTagsToStaticHtml));
+}, () => new CachingHtmlCompiler("static-html", TemplatingTools.scanHtmlForTags, compileTagsToStaticHtml));
 
 function compileTagsToStaticHtml(tags) {
   var handler = new StaticHtmlTagHandler();

@@ -2,7 +2,7 @@ const path = Plugin.path;
 
 // The CompileResult type for this CachingCompiler is the return value of
 // htmlScanner.scan: a {js, head, body, bodyAttrs} object.
-TemplateCompiler = class TemplateCompiler extends CachingCompiler {
+CachingHtmlCompiler = class CachingHtmlCompiler extends CachingCompiler {
   constructor(name, tagScannerFunc, tagHandlerFunc) {
     super({
       compilerName: name,

@@ -13,7 +13,7 @@ Package.describe({
 Package.registerBuildPlugin({
   name: "compileStaticHtmlBatch",
   use: [
-    'template-compiler',
+    'caching-html-compiler',
     'ecmascript',
     'templating-tools',
     'underscore'

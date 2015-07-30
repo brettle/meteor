@@ -17,7 +17,7 @@ Package.registerBuildPlugin({
   // XXX maybe uglify should be applied by this plugin instead of via magic
   // weak dependency.
   use: [
-    'template-compiler',
+    'caching-html-compiler',
     'ecmascript',
     'templating-tools'
   ],

@@ -2,7 +2,7 @@ Plugin.registerCompiler({
   extensions: ['html'],
   archMatching: 'web',
   isTemplate: true
-}, () => new TemplateCompiler(
+}, () => new CachingHtmlCompiler(
   "templating",
   TemplatingTools.scanHtmlForTags,
   TemplatingTools.compileTagsWithSpacebars
