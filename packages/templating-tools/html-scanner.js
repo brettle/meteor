@@ -22,13 +22,11 @@ class HtmlScan {
   constructor({
         sourceName,
         contents,
-        tagNames,
-        compileErrorClass
+        tagNames
       }) {
     this.sourceName = sourceName;
     this.contents = contents;
     this.tagNames = tagNames;
-    this.compileErrorClass = compileErrorClass;
 
     this.rest = contents;
     this.index = 0;
@@ -156,7 +154,7 @@ class HtmlScan {
   throwCompileError(msg, overrideIndex) {
     const finalIndex = (typeof overrideIndex === 'number' ? overrideIndex : this.index);
 
-    const err = new this.compileErrorClass();
+    const err = new TemplatingTools.CompileError();
     err.message = msg || "bad formatting in template file";
     err.file = this.sourceName;
     err.line = this.contents.substring(0, finalIndex).split('\n').length;

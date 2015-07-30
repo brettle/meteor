@@ -11,8 +11,8 @@ TemplateCompiler = class TemplateCompiler extends CachingCompiler {
 
     this._bodyAttrInfo = null;
 
-    this._tagScannerFunc = tagScannerFunc;
-    this._tagHandlerFunc = tagHandlerFunc;
+    this.tagScannerFunc = tagScannerFunc;
+    this.tagHandlerFunc = tagHandlerFunc;
   }
 
   compileResultSize(compileResult) {
@@ -38,16 +38,15 @@ TemplateCompiler = class TemplateCompiler extends CachingCompiler {
     const contents = inputFile.getContentsAsString();
     const inputPath = inputFile.getPathInPackage();
     try {
-      const tags = this._tagScannerFunc({
+      const tags = this.tagScannerFunc({
         sourceName: inputPath,
         contents: contents,
-        tagNames: ["body", "head", "template"],
-        compileErrorClass: TemplateCompiler.CompileError
+        tagNames: ["body", "head", "template"]
       });
 
-      return this._tagHandlerFunc(tags);
+      return this.tagHandlerFunc(tags);
     } catch (e) {
-      if (e instanceof TemplateCompiler.CompileError) {
+      if (e instanceof TemplatingTools.CompileError) {
         inputFile.error({
           message: e.message,
           line: e.line
