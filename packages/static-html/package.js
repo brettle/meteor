@@ -15,7 +15,7 @@ Package.registerBuildPlugin({
   use: [
     'template-compiler',
     'ecmascript',
-    'html-scanner',
+    'templating-tools',
     'underscore'
   ],
   sources: [

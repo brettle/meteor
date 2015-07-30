@@ -1,29 +1,33 @@
 Package.describe({
-  version: '1.0.0',
+  name: 'templating-tools',
+  version: '0.0.1',
   // Brief, one-line summary of the package.
-  summary: 'Scan an HTML file for top-level tags and attributes',
+  summary: '',
+  // URL to the Git repository containing the source code for this package.
+  git: '',
   // By default, Meteor will default to using README.md for documentation.
   // To avoid submitting documentation, set this field to null.
   documentation: 'README.md'
 });
 
 Package.onUse(function(api) {
-  api.addFiles([
-    'html-scanner.js'
-  ]);
-
-  api.export('HtmlScanner');
-
   api.use([
     'underscore',
     'ecmascript'
   ]);
+
+  api.addFiles([
+    'templating-tools.js',
+    'html-scanner.js'
+  ]);
+
+  api.export('TemplatingTools');
 });
 
 Package.onTest(function(api) {
   api.use([
     'tinytest',
-    'html-scanner',
+    'templating-tools',
     'compile-tags-with-spacebars',
     'ecmascript',
 
@@ -35,5 +39,6 @@ Package.onTest(function(api) {
     // weak dependency.
     'minifiers'
   ]);
+
   api.addFiles('html-scanner-tests.js', 'server');
 });

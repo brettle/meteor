@@ -20,7 +20,7 @@ Package.registerBuildPlugin({
     'template-compiler',
     'compile-tags-with-spacebars',
     'ecmascript',
-    'html-scanner'
+    'templating-tools'
   ],
   sources: [
     'plugin/compile-templates.js'

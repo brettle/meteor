@@ -1,4 +1,4 @@
-Tinytest.add("html-scanner - html scanner", function (test) {
+Tinytest.add("templating-tools - html scanner", function (test) {
   var testInString = function(actualStr, wantedContents) {
     if (actualStr.indexOf(wantedContents) >= 0)
       test.ok();
@@ -46,7 +46,7 @@ Tinytest.add("html-scanner - html scanner", function (test) {
   };
 
   function scanForTest(contents) {
-    const tags = HtmlScanner.scan({
+    const tags = TemplatingTools.scanHtml({
       sourceName: "",
       contents: contents,
       tagNames: ["body", "head", "template"],
