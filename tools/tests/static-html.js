@@ -44,3 +44,29 @@ selftest.define("static-html - add static content to head and body", () => {
 
   run.stop();
 });
+
+// Test that the static-html package throws the right error
+selftest.define("static-html - throws error", () => {
+  const s = new Sandbox({ fakeMongo: true });
+
+  s.createApp('myapp', 'compiler-plugin-static-html-error');
+  s.cd('myapp');
+
+  const run = startRun(s);
+
+  // Test that static content is present in HTML response.
+  const html = getUrl('http://localhost:3000/');
+  selftest.expectTrue(
+    html.indexOf(
+      `<meta name="viewport" content="width=device-width, initial-scale=1">`
+    ) !== -1
+  );
+
+  selftest.expectTrue(
+    html.indexOf(
+      `<div>I have a body, yet no Blaze!</div>`
+    ) !== -1
+  );
+
+  run.stop();
+});
