@@ -1,4 +1,4 @@
-TemplatingTools.scanHtml = function scanHtml(options) {
+TemplatingTools.scanHtmlForTags = function scanHtmlForTags(options) {
   const scan = new HtmlScan(options);
   return scan.getTags();
 };

@@ -4,6 +4,6 @@ Plugin.registerCompiler({
   isTemplate: true
 }, () => new TemplateCompiler(
   "templating",
-  TemplatingTools.scanHtml,
-  compileTagsWithSpacebars
+  TemplatingTools.scanHtmlForTags,
+  TemplatingTools.compileTagsWithSpacebars
 ));

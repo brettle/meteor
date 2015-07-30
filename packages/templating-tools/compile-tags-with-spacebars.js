@@ -1,8 +1,8 @@
-compileTagsWithSpacebars = function compileTagsWithSpacebars(tags) {
+TemplatingTools.compileTagsWithSpacebars = function compileTagsWithSpacebars(tags) {
   var handler = new SpacebarsTagCompiler();
 
   tags.forEach((tag) => {
-    handler.handleTag(tag);
+    handler.addTagToResults(tag);
   });
 
   return handler.getResults();
@@ -22,7 +22,7 @@ class SpacebarsTagCompiler {
     return this.results;
   }
 
-  handleTag(tag) {
+  addTagToResults(tag) {
     this.tag = tag;
 
     // do we have 1 or more attributes?

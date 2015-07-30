@@ -18,7 +18,6 @@ Package.registerBuildPlugin({
   // weak dependency.
   use: [
     'template-compiler',
-    'compile-tags-with-spacebars',
     'ecmascript',
     'templating-tools'
   ],

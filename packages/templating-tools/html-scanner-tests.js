@@ -46,14 +46,14 @@ Tinytest.add("templating-tools - html scanner", function (test) {
   };
 
   function scanForTest(contents) {
-    const tags = TemplatingTools.scanHtml({
+    const tags = TemplatingTools.scanHtmlForTags({
       sourceName: "",
       contents: contents,
       tagNames: ["body", "head", "template"],
       compileErrorClass: function () {}
     });
 
-    return compileTagsWithSpacebars(tags);
+    return TemplatingTools.compileTagsWithSpacebars(tags);
   }
 
   checkError(function() {
